@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ML datasets
+ml-engine/data/raw/*
+ml-engine/data/processed/*
+!ml-engine/data/raw/.gitkeep
+!ml-engine/data/processed/.gitkeep
+
+# Model artifacts
+*.pkl
+*.joblib
+*.model
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Node
+node_modules/
+dist/
+.angular/
