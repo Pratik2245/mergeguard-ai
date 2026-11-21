@@ -25,11 +25,15 @@ export class RiskService {
   }
 
   getModelInfo(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/model-info`);
+    return this.http.get(`${this.apiUrl}/model-info`, {
+      headers: this.authService.getAuthHeaders(),
+    });
   }
 
   getMongoStatus(): Observable<MongoStatus> {
-    return this.http.get<MongoStatus>(`${this.apiUrl}/mongodb/status`);
+    return this.http.get<MongoStatus>(`${this.apiUrl}/mongodb/status`, {
+      headers: this.authService.getAuthHeaders(),
+    });
   }
 
   predictDirect(payload: DirectPredictRequest): Observable<RiskPrediction> {
@@ -55,14 +59,21 @@ export class RiskService {
     if (riskLevel && riskLevel !== 'ALL') {
       params = params.set('risk_level', riskLevel);
     }
-    return this.http.get<PredictionSummary[]>(`${this.apiUrl}/predictions`, { params });
+    return this.http.get<PredictionSummary[]>(`${this.apiUrl}/predictions`, {
+      params,
+      headers: this.authService.getAuthHeaders(),
+    });
   }
 
   getPredictionDetail(id: number): Observable<RiskPrediction> {
-    return this.http.get<RiskPrediction>(`${this.apiUrl}/predictions/${id}`);
+    return this.http.get<RiskPrediction>(`${this.apiUrl}/predictions/${id}`, {
+      headers: this.authService.getAuthHeaders(),
+    });
   }
 
   getAnalytics(): Observable<Analytics> {
-    return this.http.get<Analytics>(`${this.apiUrl}/analytics`);
+    return this.http.get<Analytics>(`${this.apiUrl}/analytics`, {
+      headers: this.authService.getAuthHeaders(),
+    });
   }
 }
