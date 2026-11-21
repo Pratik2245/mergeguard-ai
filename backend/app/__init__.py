@@ -1,0 +1,1 @@
+"""MergeGuard AI Backend Application"""
