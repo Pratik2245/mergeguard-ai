@@ -1,0 +1,8 @@
+apiVersion: v2
+name: mergeguard-ai
+description: A production Helm chart for MergeGuard AI - Defect and Merge Request Risk Prediction Engine
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+maintainers:
+  - name: MergeGuard AI Team

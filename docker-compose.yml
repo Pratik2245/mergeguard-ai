@@ -1,0 +1,78 @@
+services:
+  # ==========================================
+  # Relational Database Service (PostgreSQL 16)
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: mergeguard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mergeguard
+      POSTGRES_PASSWORD: mergeguard_secure_password
+      POSTGRES_DB: mergeguard_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mergeguard -d mergeguard_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Document Database Service (MongoDB 7)
+  # ==========================================
+  mongodb:
+    image: mongo:7-jammy
+    container_name: mergeguard-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # ==========================================
+  # Backend & ML Prediction Service
+  # ==========================================
+  backend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.backend
+    container_name: mergeguard-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://mergeguard:mergeguard_secure_password@postgres:5432/mergeguard_db
+      MONGODB_URL: mongodb://mongodb:27017
+      MONGODB_DB_NAME: mergeguard_ai
+      JWT_SECRET_KEY: mergeguard-ai-secret-key-prod-2026-supersecure
+      PYTHONUNBUFFERED: "1"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml-engine/models:/app/ml-engine/models:ro
+
+  # ==========================================
+  # Frontend Dashboard (Angular + Nginx)
+  # ==========================================
+  frontend:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile.frontend
+    container_name: mergeguard-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+
+volumes:
+  postgres_data:
+    driver: local
+  mongo_data:
+    driver: local

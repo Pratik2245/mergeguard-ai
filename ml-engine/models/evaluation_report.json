@@ -1,0 +1,81 @@
+{
+  "champion_model": "gradient_boosting",
+  "benchmarks": {
+    "dummy": {
+      "accuracy": 0.19321842516024043,
+      "precision": 0.19321842516024043,
+      "recall": 1.0,
+      "f1": 0.3238609479807398,
+      "roc_auc": 0.5,
+      "pr_auc": 0.19321842516024043,
+      "brier_score": 0.2500547488395133,
+      "confusion_matrix": {
+        "true_negatives": 0,
+        "false_positives": 24293,
+        "false_negatives": 0,
+        "true_positives": 5818
+      }
+    },
+    "logistic_regression": {
+      "accuracy": 0.6889840921922221,
+      "precision": 0.35939110441607863,
+      "recall": 0.7791337229288415,
+      "f1": 0.49188866583473495,
+      "roc_auc": 0.7996018853535496,
+      "pr_auc": 0.49075013983619603,
+      "brier_score": 0.2025297529024253,
+      "confusion_matrix": {
+        "true_negatives": 16213,
+        "false_positives": 8080,
+        "false_negatives": 1285,
+        "true_positives": 4533
+      }
+    },
+    "random_forest": {
+      "accuracy": 0.6674969280329448,
+      "precision": 0.3482853422080741,
+      "recall": 0.8274321072533517,
+      "f1": 0.49022403258655806,
+      "roc_auc": 0.8071836011932756,
+      "pr_auc": 0.5088851560880816,
+      "brier_score": 0.21509258290739536,
+      "confusion_matrix": {
+        "true_negatives": 15285,
+        "false_positives": 9008,
+        "false_negatives": 1004,
+        "true_positives": 4814
+      }
+    },
+    "gradient_boosting": {
+      "accuracy": 0.6706851316794527,
+      "precision": 0.3496257155438133,
+      "recall": 0.8188380886902715,
+      "f1": 0.4900226290886649,
+      "roc_auc": 0.8033546445277182,
+      "pr_auc": 0.5000866978050253,
+      "brier_score": 0.213948375811845,
+      "confusion_matrix": {
+        "true_negatives": 15431,
+        "false_positives": 8862,
+        "false_negatives": 1054,
+        "true_positives": 4764
+      }
+    }
+  },
+  "train_samples": 44834,
+  "test_samples": 30111,
+  "feature_names": [
+    "la",
+    "ld",
+    "nf",
+    "nd",
+    "ns",
+    "ent",
+    "ndev",
+    "age",
+    "nuc",
+    "aexp",
+    "arexp",
+    "asexp"
+  ]
+}

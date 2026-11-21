@@ -1,0 +1,54 @@
+# Default values for MergeGuard AI Helm chart
+replicaCount: 2
+
+backend:
+  image:
+    repository: mergeguard-backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 300m
+      memory: 512Mi
+
+frontend:
+  image:
+    repository: mergeguard-frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+postgresql:
+  enabled: true
+  auth:
+    username: mergeguard
+    password: mergeguard_k8s_password
+    database: mergeguard_db
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: mergeguard.local
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend

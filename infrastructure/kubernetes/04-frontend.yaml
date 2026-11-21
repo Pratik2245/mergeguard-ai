@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: mergeguard-ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mergeguard-frontend
+  template:
+    metadata:
+      labels:
+        app: mergeguard-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: mergeguard-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: mergeguard-ai
+spec:
+  selector:
+    app: mergeguard-frontend
+  ports:
+    - port: 80
+      targetPort: 80
