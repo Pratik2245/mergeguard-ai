@@ -1,0 +1,45 @@
+# ==========================================
+# MergeGuard AI - GitLab CI/CD Pipeline
+# ==========================================
+stages:
+  - lint-and-test
+  - ml-evaluate
+  - build-images
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+
+backend-tests:
+  stage: lint-and-test
+  image: python:3.11-slim
+  script:
+    - pip install -r backend/requirements.txt
+    - python backend/tests/test_runner.py
+
+frontend-build:
+  stage: lint-and-test
+  image: node:22-alpine
+  script:
+    - cd frontend
+    - npm install --legacy-peer-deps
+    - npm run build -- --configuration=production
+
+ml-benchmark-verify:
+  stage: ml-evaluate
+  image: python:3.11-slim
+  script:
+    - pip install -r backend/requirements.txt
+    - python -c "import json; report = json.load(open('ml-engine/models/evaluation_report.json')); assert report['benchmarks']['gradient_boosting']['roc_auc'] > 0.75, 'Model ROC-AUC regression detected!'"
+
+docker-build:
+  stage: build-images
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  script:
+    - docker build -f infrastructure/docker/Dockerfile.backend -t $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA .
+    - docker build -f infrastructure/docker/Dockerfile.frontend -t $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHA .
+  only:
+    - main

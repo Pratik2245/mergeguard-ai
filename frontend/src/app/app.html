@@ -8,139 +8,321 @@
     <span class="toast-text">{{ toastMessage() }}</span>
   </div>
 
-  <!-- Authentication Modal -->
-  <div class="modal-backdrop" *ngIf="showAuthModal()" (click)="closeAuth()">
-    <div class="modal-card" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <div class="modal-tabs">
-          <button class="modal-tab-btn" [class.active]="authMode() === 'login'" (click)="authMode.set('login')">
-            Sign In
-          </button>
-          <button class="modal-tab-btn" [class.active]="authMode() === 'register'" (click)="authMode.set('register')">
-            Create Account
-          </button>
-        </div>
-        <button class="modal-close" (click)="closeAuth()">✕</button>
-      </div>
-
-      <div class="modal-body">
-        <div class="alert-banner error-banner mb-4" *ngIf="authError()">
-          <span class="alert-icon">⚠️</span>
-          <span class="alert-text">{{ authError() }}</span>
-        </div>
-
-        <!-- Login Form -->
-        <form *ngIf="authMode() === 'login'" (ngSubmit)="submitLogin()" class="auth-form">
-          <div class="form-group">
-            <label>Username or Email Address</label>
-            <input type="text" [(ngModel)]="loginForm.username_or_email" name="username_or_email" class="input-field" placeholder="admin@mergeguard.ai" required />
-          </div>
-
-          <div class="form-group">
-            <label>Password</label>
-            <input type="password" [(ngModel)]="loginForm.password" name="password" class="input-field" placeholder="••••••••••••" required />
-          </div>
-
-          <button type="submit" class="submit-btn mt-4" [disabled]="isLoading()">
-            <span *ngIf="!isLoading()">Sign In with JWT</span>
-            <span *ngIf="isLoading()" class="loading-state"><span class="spinner"></span> Authenticating...</span>
-          </button>
-
-          <div class="demo-cred-hint">
-            <span class="hint-title">💡 Seed Demo Credentials:</span>
-            <code>admin@mergeguard.ai</code> / <code>adminpassword123</code>
-          </div>
-        </form>
-
-        <!-- Register Form -->
-        <form *ngIf="authMode() === 'register'" (ngSubmit)="submitRegister()" class="auth-form">
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label>Username</label>
-              <input type="text" [(ngModel)]="registerForm.username" name="reg_username" class="input-field" placeholder="e.g. dev_sarah" required />
-            </div>
-            <div class="form-group col-6">
-              <label>Full Name</label>
-              <input type="text" [(ngModel)]="registerForm.full_name" name="reg_fullname" class="input-field" placeholder="Sarah Connor" />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Work Email</label>
-            <input type="email" [(ngModel)]="registerForm.email" name="reg_email" class="input-field" placeholder="sarah@company.com" required />
-          </div>
-
-          <div class="form-group">
-            <label>Password (min 6 characters)</label>
-            <input type="password" [(ngModel)]="registerForm.password" name="reg_password" class="input-field" placeholder="••••••••••••" minlength="6" required />
-          </div>
-
-          <button type="submit" class="submit-btn mt-4" [disabled]="isLoading()">
-            <span *ngIf="!isLoading()">Register & Issue Token</span>
-            <span *ngIf="isLoading()" class="loading-state"><span class="spinner"></span> Creating Account...</span>
-          </button>
-        </form>
-      </div>
+  <!-- ================================================================= -->
+  <!-- LOADING STATE: App initializes and validates authentication      -->
+  <!-- ================================================================= -->
+  <div class="loading-screen" *ngIf="authService.isAuthChecking()">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <h3>MergeGuard AI</h3>
+      <p>Initializing secure access... validating authentication</p>
     </div>
   </div>
 
-  <!-- Top Navigation Header -->
-  <header class="app-header">
-    <div class="brand">
-      <div class="brand-shield">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z" fill="url(#shield-grad)" stroke="#38bdf8" stroke-width="1.5"/>
-          <path d="M12 7V17M8 12L12 16L16 10" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <defs>
-            <linearGradient id="shield-grad" x1="3" y1="2" x2="21" y2="24" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#1e3a8a"/>
-              <stop offset="1" stop-color="#0284c7"/>
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-      <div class="brand-text">
-        <div class="brand-title">
-          <span>MergeGuard</span>
-          <span class="badge-ai">AI</span>
+  <!-- ================================================================= -->
+  <!-- UNAUTHENTICATED STATE: SECURE ENTERPRISE AUTHENTICATION GATEWAY   -->
+  <!-- ================================================================= -->
+  <div class="auth-gateway-container" *ngIf="!authService.isAuthChecking() && !authService.currentUser()">
+    <div class="auth-gateway-content">
+      <!-- Brand & Hero Header -->
+      <div class="auth-gateway-hero">
+        <div class="auth-gateway-shield">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z" fill="url(#auth-shield-grad)" stroke="#38bdf8" stroke-width="1.5"/>
+            <path d="M12 7V17M8 12L12 16L16 10" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="auth-shield-grad" x1="3" y1="2" x2="21" y2="24" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1e3a8a"/>
+                <stop offset="1" stop-color="#0284c7"/>
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
-        <p class="tagline">Enterprise Defect & Merge Request Risk Intelligence</p>
-      </div>
-    </div>
 
-    <!-- Header Status, MongoDB & User Profile -->
-    <div class="system-status">
-      <!-- MongoDB Database Status Pill -->
-      <div class="mongo-pill" [class.connected]="mongoStatus()?.connected" [class.disconnected]="!mongoStatus()?.connected" title="{{ mongoStatus()?.message }}">
-        <span class="mongo-icon">🍃</span>
-        <span class="mongo-text">MongoDB: {{ mongoStatus()?.connected ? 'Connected' : 'Local Fallback' }}</span>
-      </div>
-
-      <!-- Inference Engine Health -->
-      <div class="status-pill" [class.online]="backendHealthy()" [class.offline]="!backendHealthy()">
-        <span class="status-dot"></span>
-        <span class="status-label">{{ backendHealthy() ? 'Inference Ready' : 'Connecting...' }}</span>
-      </div>
-
-      <!-- User Auth Profile or Sign In Button -->
-      <div class="user-profile-section" *ngIf="authService.currentUser(); else guestView">
-        <div class="user-pill">
-          <div class="user-avatar">{{ authService.currentUser()!.username.charAt(0).toUpperCase() }}</div>
-          <div class="user-info">
-            <span class="user-name">@{{ authService.currentUser()!.username }}</span>
-            <span class="user-role">{{ authService.currentUser()!.role }}</span>
+        <div class="auth-gateway-title-group">
+          <h1 class="auth-gateway-title">
+            MergeGuard <span class="badge-ai">AI</span>
+          </h1>
+          <p class="auth-gateway-subtitle">Know what needs a closer review before it reaches production.</p>
+          <div class="auth-gate-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Secure workspace sign in</span>
           </div>
-          <button class="btn-logout" (click)="logout()" title="Sign Out">✕</button>
+        </div>
+
+        <!-- System Connectivity Status Bar -->
+        <div class="auth-system-status">
+          <div class="status-pill" [class.online]="backendHealthy()" [class.offline]="!backendHealthy()">
+            <span class="status-dot"></span>
+            <span class="status-label">{{ backendHealthy() ? 'Inference engine online' : (backendChecked() ? 'Inference engine offline' : 'Checking inference engine') }}</span>
+          </div>
+          <div class="mongo-pill" [class.connected]="mongoStatus()?.connected" [class.disconnected]="!mongoStatus()?.connected">
+            <span class="mongo-icon">🍃</span>
+            <span class="mongo-text">{{ mongoStatus() ? (mongoStatus()!.connected ? 'Document store connected' : 'Local storage fallback') : 'Checking document store' }}</span>
+          </div>
         </div>
       </div>
-      <ng-template #guestView>
-        <button class="btn-auth-signin" (click)="openAuth('login')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-          <span>Sign In</span>
-        </button>
-      </ng-template>
+
+      <!-- Main Authentication Card -->
+      <div class="auth-card">
+        <div class="auth-card-header">
+          <div class="auth-card-intro">
+            <span class="auth-eyebrow">MERGE REQUEST RISK INTELLIGENCE</span>
+            <h2>{{ authMode() === 'login' ? 'Welcome back' : 'Create your account' }}</h2>
+            <p>{{ authMode() === 'login' ? 'Sign in to review risk signals and audit history.' : 'Set up your reviewer workspace in a few seconds.' }}</p>
+          </div>
+          <div class="auth-tabs">
+            <button
+              class="auth-tab-btn"
+              [class.active]="authMode() === 'login'"
+              (click)="authMode.set('login'); authError.set(null)"
+              type="button"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+              Sign In
+            </button>
+            <button
+              class="auth-tab-btn"
+              [class.active]="authMode() === 'register'"
+              (click)="authMode.set('register'); authError.set(null)"
+              type="button"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+              Create Account
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-card-body">
+          <!-- Error Alert Banner -->
+          <div class="alert-banner error-banner mb-4" *ngIf="authError()" role="alert" aria-live="polite">
+            <span class="alert-icon">⚠️</span>
+            <span class="alert-text">{{ authError() }}</span>
+          </div>
+
+          <!-- Sign In Form -->
+          <form *ngIf="authMode() === 'login'" (ngSubmit)="submitLogin()" class="auth-form">
+            <div class="form-group">
+              <label for="auth-identifier">Username or email</label>
+              <input
+                id="auth-identifier"
+                type="text"
+                [(ngModel)]="loginForm.username_or_email"
+                name="auth_username_or_email"
+                class="input-field"
+                placeholder="admin@mergeguard.ai"
+                required
+                autocomplete="username"
+                spellcheck="false"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="auth-password">Password</label>
+              <input
+                id="auth-password"
+                type="password"
+                [(ngModel)]="loginForm.password"
+                name="auth_password"
+                class="input-field"
+                placeholder="••••••••••••"
+                required
+                autocomplete="current-password"
+              />
+            </div>
+
+            <button type="submit" class="submit-btn mt-4 auth-primary-btn" [disabled]="isLoading()">
+              <span *ngIf="!isLoading()">Sign in to MergeGuard</span>
+              <span *ngIf="isLoading()" class="loading-state"><span class="spinner"></span> Authenticating...</span>
+            </button>
+
+            <!-- Quick Demo Login Button -->
+            <button type="button" class="btn-demo-quick-login" (click)="loginWithDemo()" [disabled]="isLoading()">
+              <span class="demo-bolt">⚡</span>
+              <span>Explore with demo account</span>
+            </button>
+
+            <div class="demo-cred-hint">
+              <span class="hint-title">Demo access</span>
+              <code>admin@mergeguard.ai</code> / <code>adminpassword123</code>
+            </div>
+          </form>
+
+          <!-- Register Form -->
+          <form *ngIf="authMode() === 'register'" (ngSubmit)="submitRegister()" class="auth-form">
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="reg-username">Username</label>
+                <input
+                  id="reg-username"
+                  type="text"
+                  [(ngModel)]="registerForm.username"
+                  name="reg_username"
+                  class="input-field"
+                  placeholder="e.g. dev_sarah"
+                  required
+                />
+              </div>
+              <div class="form-group col-6">
+                <label for="reg-fullname">Full name</label>
+                <input
+                  id="reg-fullname"
+                  type="text"
+                  [(ngModel)]="registerForm.full_name"
+                  name="reg_fullname"
+                  class="input-field"
+                  placeholder="Sarah Connor"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="reg-email">Work email</label>
+              <input
+                id="reg-email"
+                type="email"
+                [(ngModel)]="registerForm.email"
+                name="reg_email"
+                class="input-field"
+                placeholder="sarah@company.com"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="reg-password">Password <span class="auth-label-hint">At least 6 characters</span></label>
+              <input
+                id="reg-password"
+                type="password"
+                [(ngModel)]="registerForm.password"
+                name="reg_password"
+                class="input-field"
+                placeholder="••••••••••••"
+                minlength="6"
+                required
+              />
+            </div>
+
+            <button type="submit" class="submit-btn mt-4 auth-primary-btn" [disabled]="isLoading()">
+              <span *ngIf="!isLoading()">Register & Enter MergeGuard</span>
+              <span *ngIf="isLoading()" class="loading-state"><span class="spinner"></span> Creating Account...</span>
+            </button>
+
+            <div class="auth-switch-link">
+              <span>Already registered?</span>
+              <button type="button" class="btn-text-link" (click)="authMode.set('login')">Sign in to your account</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Feature Grid Highlighting Security & Capabilities -->
+      <div class="auth-features-grid">
+        <div class="auth-feature-card">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-content">
+            <h4>Predictive Risk Modeling</h4>
+            <p>Gradient Boosting & Random Forest scoring evaluating churn, entropy, and historical defect rates.</p>
+          </div>
+        </div>
+
+        <div class="auth-feature-card">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-content">
+            <h4>Live Git Diff Scanner</h4>
+            <p>Unified diff parsing extracting added/deleted lines, critical security paths, and unit test presence.</p>
+          </div>
+        </div>
+
+        <div class="auth-feature-card">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-content">
+            <h4>Zero-Trust Access Control</h4>
+            <p>Argon2 password hashing with RFC 7519 JWT Bearer tokens guarding all inspection endpoints.</p>
+          </div>
+        </div>
+
+        <div class="auth-feature-card">
+          <div class="feature-icon">🍃</div>
+          <div class="feature-content">
+            <h4>Audit Trail Document Store</h4>
+            <p>Dual-storage MongoDB documents and relational records with one-click Markdown review generation.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gateway Footer -->
+      <footer class="auth-gateway-footer">
+        <span>MergeGuard AI Enterprise Risk Engine • Authorized Personnel Only</span>
+      </footer>
     </div>
-  </header>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- AUTHENTICATED STATE: ACTUAL MERGEGUARD AI APPLICATION             -->
+  <!-- ================================================================= -->
+  <div class="app-main-wrapper" *ngIf="authService.currentUser()">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-shield">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L3 7V12C3 17.52 6.84 22.74 12 24C17.16 22.74 21 17.52 21 12V7L12 2Z" fill="url(#shield-grad)" stroke="#38bdf8" stroke-width="1.5"/>
+            <path d="M12 7V17M8 12L12 16L16 10" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="shield-grad" x1="3" y1="2" x2="21" y2="24" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#1e3a8a"/>
+                <stop offset="1" stop-color="#0284c7"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">
+            <span>MergeGuard</span>
+            <span class="badge-ai">AI</span>
+          </div>
+          <p class="tagline">Enterprise Defect & Merge Request Risk Intelligence</p>
+        </div>
+      </div>
+
+      <!-- Header Status, MongoDB & User Profile -->
+      <div class="system-status">
+        <!-- MongoDB Database Status Pill -->
+        <div class="mongo-pill" [class.connected]="mongoStatus()?.connected" [class.disconnected]="!mongoStatus()?.connected" title="{{ mongoStatus()?.message }}">
+          <span class="mongo-icon">🍃</span>
+          <span class="mongo-text">MongoDB: {{ mongoStatus()?.connected ? 'Connected' : 'Local Fallback' }}</span>
+        </div>
+
+        <!-- Inference Engine Health -->
+        <div class="status-pill" [class.online]="backendHealthy()" [class.offline]="!backendHealthy()">
+          <span class="status-dot"></span>
+          <span class="status-label">{{ backendHealthy() ? 'Inference Ready' : 'Connecting...' }}</span>
+        </div>
+
+        <!-- Authenticated User Profile & Sign Out Button -->
+        <div class="user-profile-section" *ngIf="authService.currentUser()">
+          <div class="user-pill">
+            <div class="user-avatar">{{ authService.currentUser()!.username.charAt(0).toUpperCase() }}</div>
+            <div class="user-info">
+              <span class="user-name">@{{ authService.currentUser()!.username }}</span>
+              <span class="user-role">{{ authService.currentUser()!.role }}</span>
+            </div>
+            <button class="btn-logout" (click)="logout()" title="Sign Out">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
 
   <!-- Navigation Bar -->
   <nav class="nav-tabs">
@@ -730,6 +912,7 @@
     </section>
 
   </main>
+  </div>
 </div>
 
 <!-- TEMPLATE: EMPTY RESULT STATE -->

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RiskService } from './services/risk.service';
@@ -29,6 +29,7 @@ export class App implements OnInit {
 
   // Application State Signals
   backendHealthy = signal<boolean>(false);
+  backendChecked = signal<boolean>(false);
   modelInfo = signal<any>(null);
   mongoStatus = signal<MongoStatus | null>(null);
   analytics = signal<Analytics | null>(null);
@@ -46,8 +47,8 @@ export class App implements OnInit {
   authError = signal<string | null>(null);
 
   loginForm = {
-    username_or_email: 'admin@mergeguard.ai',
-    password: 'adminpassword123',
+    username_or_email: '',
+    password: '',
   };
 
   registerForm = {
@@ -142,20 +143,43 @@ diff --git a/tests/test_security.py b/tests/test_security.py
     return items;
   });
 
+  constructor() {
+    effect(() => {
+      if (!this.authService.isAuthChecking() && this.authService.currentUser()) {
+        this.loadInitialAppData();
+      }
+    });
+  }
+
   ngOnInit() {
     this.checkHealth();
+  }
+
+  loadInitialAppData() {
     this.loadAnalytics();
     this.loadHistory();
     this.loadModelInfo();
     this.loadMongoStatus();
   }
 
+  resetAppData() {
+    this.activePrediction.set(null);
+    this.history.set([]);
+    this.analytics.set(null);
+    this.errorMessage.set(null);
+    this.activeTab.set('dashboard');
+  }
+
   checkHealth() {
     this.riskService.getHealth().subscribe({
       next: (res) => {
         this.backendHealthy.set(res.status === 'healthy');
+        this.backendChecked.set(true);
       },
-      error: () => this.backendHealthy.set(false),
+      error: () => {
+        this.backendHealthy.set(false);
+        this.backendChecked.set(true);
+      },
     });
   }
 
@@ -249,8 +273,17 @@ diff --git a/tests/test_security.py b/tests/test_security.py
     });
   }
 
+  loginWithDemo() {
+    this.loginForm = {
+      username_or_email: 'admin@mergeguard.ai',
+      password: 'adminpassword123',
+    };
+    this.submitLogin();
+  }
+
   logout() {
     this.authService.logout();
+    this.resetAppData();
     this.showToast('You have been signed out.');
   }
 

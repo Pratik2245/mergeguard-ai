@@ -1,4 +1,4 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { User, TokenResponse } from '../models/risk.model';
@@ -12,6 +12,8 @@ export class AuthService {
   private tokenKey = 'mergeguard_jwt_token';
 
   currentUser = signal<User | null>(null);
+  isAuthenticated = computed(() => !!this.currentUser());
+  isAuthChecking = signal<boolean>(true);
 
   constructor() {
     this.restoreSession();
@@ -47,26 +49,37 @@ export class AuthService {
 
   getProfile(): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/me`, { headers: this.getAuthHeaders() }).pipe(
-      tap((user) => this.currentUser.set(user))
+      tap((user) => {
+        this.currentUser.set(user);
+      })
     );
   }
 
   logout() {
     localStorage.removeItem(this.tokenKey);
     this.currentUser.set(null);
+    this.isAuthChecking.set(false);
   }
 
   private saveSession(token: string, user: User) {
     localStorage.setItem(this.tokenKey, token);
     this.currentUser.set(user);
+    this.isAuthChecking.set(false);
   }
 
   private restoreSession() {
     const token = this.getToken();
     if (token) {
+      this.isAuthChecking.set(true);
       this.getProfile().subscribe({
-        error: () => this.logout(),
+        next: () => this.isAuthChecking.set(false),
+        error: () => {
+          this.logout();
+        },
       });
+    } else {
+      this.currentUser.set(null);
+      this.isAuthChecking.set(false);
     }
   }
 }
